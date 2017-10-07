@@ -1,0 +1,16 @@
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+canvas {
+  width: 900px;
+  height: 900px;
+  margin: 20px;
+  background-color: black;
+  box-shadow: 5px 5px #777;
+  image-rendering: pixelated;
+}
