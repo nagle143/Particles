@@ -59,6 +59,18 @@ export default class Controller {
       case '-':
         this.removeParticle();
         break;
+      case '*':
+        this.particles.forEach(particle => {
+          particle.speed.x *= 1.10;
+          particle.speed.y *= 1.10;
+        });
+        break;
+      case '/':
+        this.particles.forEach(particle => {
+          particle.speed.x *= 0.90;
+          particle.speed.y *= 0.90;
+        });
+        break;
     }
   }
 
@@ -79,7 +91,7 @@ export default class Controller {
       var collision = false;
       x = Math.random() * 900 + 50;
       y = Math.random() * 900 + 50;
-      radius = Math.random() * 30 + 10;
+      radius = 45;
       mass = Math.floor(Math.random() * 10) + 1;
       if(this.particles.length === 0) {
         this.particles.push(new Particle(x, y, radius, mass, id));

@@ -89,7 +89,7 @@ export default class Particle {
         break;
       default:
         this.color = "yellow";
-        this.radius = 50;
+        this.radius = 30;
     }
   }
 

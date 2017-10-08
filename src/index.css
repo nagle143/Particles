@@ -12,5 +12,4 @@ canvas {
   margin: 20px;
   background-color: black;
   box-shadow: 5px 5px #777;
-  image-rendering: pixelated;
 }
