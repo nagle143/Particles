@@ -1,15 +1,25 @@
-body {
+/*body {
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-}
+}*/
 
 canvas {
+  position: absolute;
+  left: 20px;
+  top: 20px;
   width: 900px;
   height: 900px;
-  margin: 20px;
-  background-color: black;
-  box-shadow: 5px 5px #777;
+  background-color: 'white';
+}
+
+#ui {
+  position: absolute;
+  background-color: red;
+  left: 920px;
+  top: 20px;
+  width: 200px;
+  height: 900px;
 }

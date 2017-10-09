@@ -8,6 +8,7 @@ export default class Particle {
     this.mass = mass;
     this.color;
     this.fill;
+    this.opacity = 0.2;
     this.initColorAndRadius();
     this.ID = id;
     this.speed = {x: 0.0, y: 0.0};
@@ -63,33 +64,34 @@ export default class Particle {
       case 2:
       case 3:
         this.radius = 10;
-        this.color = 'red';
+        this.color = 'yellow';
         break;
       case 4:
         this.radius = 15;
-        this.color = 'cyan';
+        this.color = 'orange';
         break;
       case 5:
         this.radius = 20;
-        this.color = 'green';
+        this.color = 'red';
         break;
       case 6:
         this.radius = 25;
-        this.color = 'blue';
+        this.color = 'violet';
         break;
       case 7:
         this.radius = 30;
-        this.color = 'violet';
+        this.color = 'blue';
         break;
       case 8:
       case 9:
       case 10:
         this.radius = 40;
-        this.color = "purple";
+        this.color = "green";
         break;
       default:
-        this.color = "yellow";
+        this.color = "cyan";
         this.radius = 30;
+        this.opacity = 1.0;
     }
   }
 
@@ -118,19 +120,22 @@ export default class Particle {
 
   determineFill() {
     if(this.velocity.mag <= 3) {
-      this.fill = 'blue';
+      this.fill = 'red';
     }
     else if(this.velocity.mag > 3 && this.velocity.mag <= 5) {
       this.fill = 'orange';
     }
     else if(this.velocity.mag > 5 && this.velocity.mag <= 7) {
+      this.fill = 'cyan';
+    }
+    else if(this.velocity.mag > 9 && this.velocity.mag <= 12) {
       this.fill = 'yellow';
     }
-    else if(this.velocity.mag > 9 && this.velocity.mag <= 15) {
-      this.fill = 'red';
+    else if(this.velocity.mag > 12 && this.velocity.mag <= 15) {
+      this.fill = 'white';
     }
     else {
-      this.fill = 'white';
+      this.fill = 'blue';
     }
   }
 
@@ -155,7 +160,7 @@ export default class Particle {
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.closePath();
     context.save();
-    context.globalAlpha = 0.2;
+    context.globalAlpha = this.opacity;
     context.fill();
     context.restore();
     //context.strokeText(this.ID, this.x, this.y)
