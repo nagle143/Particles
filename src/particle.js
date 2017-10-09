@@ -7,14 +7,15 @@ export default class Particle {
     this.radius;
     this.mass = mass;
     this.color;
-    this.fill;
+    this.edgeColor;
+    this.energyLevel = 0.1;
     this.opacity = 0.2;
     this.initColorAndRadius();
     this.ID = id;
     this.speed = {x: 0.0, y: 0.0};
     this.MAXSPEED = {x: 20, y: 20};
     this.initSpeed();
-    this.velocity = {mag: 0.0, dir: 0.0};
+    this.velocity = {mag: 0.0, energy: 0.0};
     this.temp = {x: this.x, y: this.y, radius: this.radius};
     //console.log(this.temp);
 
@@ -118,24 +119,42 @@ export default class Particle {
     }
   }
 
-  determineFill() {
+  determineEdge() {
     if(this.velocity.mag <= 3) {
-      this.fill = 'red';
+      this.edgeColor = 'red';
     }
     else if(this.velocity.mag > 3 && this.velocity.mag <= 5) {
-      this.fill = 'orange';
+      this.edgeColor = 'orange';
     }
     else if(this.velocity.mag > 5 && this.velocity.mag <= 7) {
-      this.fill = 'cyan';
+      this.edgeColor = 'cyan';
     }
     else if(this.velocity.mag > 9 && this.velocity.mag <= 12) {
-      this.fill = 'yellow';
+      this.edgeColor = 'yellow';
     }
     else if(this.velocity.mag > 12 && this.velocity.mag <= 15) {
-      this.fill = 'white';
+      this.edgeColor = 'white';
     }
     else {
-      this.fill = 'blue';
+      this.edgeColor = 'blue';
+    }
+  }
+
+  determineKinetic() {
+    if(this.velocity.energy <= 15) {
+      this.energyLevel = 0.1;
+    }
+    else if(this.velocity.energy > 15 && this.velocity.energy <= 25) {
+      this.energyLevel = 0.20;
+    }
+    else if(this.velocity.energy > 25 && this.velocity.energy <= 35) {
+      this.energyLevel = 0.30;
+    }
+    else if(this.velocity.energy > 35 && this.velocity.energy <= 45) {
+      this.energyLevel = 0.40;
+    }
+    else {
+      this.energyLevel = 0.50;
     }
   }
 
@@ -144,18 +163,27 @@ export default class Particle {
     this.x += this.speed.x;
     this.y += this.speed.y;
     this.velocity.mag = Math.sqrt(this.speed.x * this.speed.x + this.speed.y * this.speed.y);
-    this.determineFill();
+    this.velocity.energy = 0.5 * this.mass * this.velocity.mag * this.velocity.mag;
+    this.determineEdge();
+    this.determineKinetic();
   }
 
   render(context) {
     context.save();
     context.font = "15px Times New Roman";
-    context.strokeStyle = this.fill;
+    context.strokeStyle = this.edgeColor;
     context.fillStyle = this.color;
     context.beginPath();
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.closePath();
     context.stroke();
+    context.beginPath();
+    context.arc(this.x, this.y, this.radius * this.energyLevel, 0, Math.PI * 2);
+    context.closePath();
+    context.save();
+    context.globalAlpha = 1.0;
+    context.fill();
+    context.restore();
     context.beginPath();
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.closePath();

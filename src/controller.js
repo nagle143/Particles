@@ -53,7 +53,7 @@ export default class Controller {
     window.onkeydown = this.handleKeyDown;
 
     //Loop
-    this.interval = setInterval(this.loop, 10);
+    this.interval = setInterval(this.loop, 20);
   }
 
   handKeyDown(event) {
@@ -62,7 +62,7 @@ export default class Controller {
     switch (event.key) {
       case 'b':
       case 'B':
-        if(this.numBlocks <= this.MAX_PARTICLES) {
+        if(this.numBlocks < this.MAX_BLOCKS) {
           this.addRect();
           this.numBlocks++;
         }
@@ -75,7 +75,7 @@ export default class Controller {
         }
         return;
       case '+':
-        if(this.numParticles <= this.MAX_PARTICLES) {
+        if(this.numParticles < this.MAX_PARTICLES) {
           this.addParticle();
           this.numParticles++;
         }
@@ -137,6 +137,7 @@ export default class Controller {
         id++;
       }
     }
+    this.amplified = 100;
   }
 
   createBlocks() {
@@ -337,6 +338,10 @@ export default class Controller {
     this.HUDcontext.strokeText("- : Removes particle", 10, 750);
     this.HUDcontext.strokeText("B : Adds Block", 10, 800);
     this.HUDcontext.strokeText("N : Removes Block", 10, 850);
+    this.HUDcontext.font = '15px Times New Roman';
+    this.HUDcontext.strokeText("**Changing Speed Only", 10, 900);
+    this.HUDcontext.strokeText("  Affects On-Screen", 10, 930);
+    this.HUDcontext.strokeText("  Particles**", 10, 960);
   }
 
   update() {
