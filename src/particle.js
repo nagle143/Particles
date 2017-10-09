@@ -1,64 +1,54 @@
 
-
+/** @class Particle
+  * Class that takes care of everything particle related
+  */
 export default class Particle {
-  constructor(x, y, radius, mass, id) {
+  /** @constructor
+    * Initializes all the most important things about a particle
+    */
+  constructor(x, y, mass, id) {
+    //Basic Properties
     this.x = x;
     this.y = y;
+    //Determined by mass
     this.radius;
     this.mass = mass;
+    //Also Determined by mass
     this.color;
+    //Determined by speed
     this.edgeColor;
+    //Determined by kinetic energy
     this.energyLevel = 0.1;
     this.opacity = 0.2;
+    //Initializes color and radius
     this.initColorAndRadius();
     this.ID = id;
+    //Vital speed attribute
     this.speed = {x: 0.0, y: 0.0};
-    this.MAXSPEED = {x: 20, y: 20};
     this.initSpeed();
+    //Stores the full magnitude of the particle and kinetic energy
     this.velocity = {mag: 0.0, energy: 0.0};
-    this.temp = {x: this.x, y: this.y, radius: this.radius};
-    //console.log(this.temp);
 
     //Binders
-    this.getRadius = this.getRadius.bind(this);
-    this.getMass = this.getMass.bind(this);
     this.update = this.update.bind(this);
     this.render = this.render.bind(this);
     this.collisionDetection = this.collisionDetection.bind(this);
     this.edgeDetection = this.edgeDetection.bind(this);
     this.initSpeed = this.initSpeed.bind(this);
     this.initColor = this.initColorAndRadius.bind(this);
-    this.updateSpeed = this.updateSpeed.bind(this);
   }
 
-  getRadius() {
-    return this.radius;
-  }
-
-  getMass() {
-    return this.mass;
-  }
-
+  /** @function initSpeed()
+    * Function to initialize the x and y speed of the particle
+    */
   initSpeed() {
     this.speed.x = Math.random() * 8 - 4;
     this.speed.y = Math.random() * 8 - 4;
   }
 
-  updateSpeed(x, y) {
-    if(Math.abs(x) > this.MAXSPEED.x) {
-      this.speed.x = 20;
-    }
-    else {
-      this.speed.x = x;
-    }
-    if(Math.abs(y) > this.MAXSPEED.y) {
-      this.speed.s = 20;
-    }
-    else {
-      this.speed.y = y;
-    }
-  }
-
+  /** @function initColorAndRadius()
+    * Function to initialize the color and radius of a particle based on its mass
+    */
   initColorAndRadius() {
     switch (this.mass) {
       case 1:
@@ -96,6 +86,12 @@ export default class Particle {
     }
   }
 
+  /** @function collisionDetection()
+    * function to hadle particle on particle violence
+    * @param float cx is the x position of the circle being checked against this
+    * @param float cy is the y position of the circle being checked against this
+    * @param int cradius is the radius of the circle being checked against this
+    */
   collisionDetection(cx, cy, cradius) {
     var distance = Math.pow(this.x - cx, 2) + Math.pow(this.y - cy, 2);
     if(distance < Math.pow(this.radius + cradius, 2)) {
@@ -104,6 +100,9 @@ export default class Particle {
     return false;
   }
 
+  /** @function edgeDetection()
+    * function to handle the particle hiting the edge of the area
+    */
   edgeDetection() {
     if(this.x + this.radius >= 1000 && this.speed.x > 0) {
       this.speed.x = -this.speed.x;
@@ -119,6 +118,9 @@ export default class Particle {
     }
   }
 
+  /** @function determineEdge()
+    * Function to determine the color of the edge of the particle based on the velocity magnitude
+    */
   determineEdge() {
     if(this.velocity.mag <= 3) {
       this.edgeColor = 'red';
@@ -140,6 +142,9 @@ export default class Particle {
     }
   }
 
+  /** @function determineKinetic()
+    * Function to determine the size of the inner circle to represent the kinetic energy of the particle
+    */
   determineKinetic() {
     if(this.velocity.energy <= 15) {
       this.energyLevel = 0.1;
@@ -158,6 +163,9 @@ export default class Particle {
     }
   }
 
+  /** @function update()
+    * Function to handle updating the position and colors of each particle
+    */
   update() {
     this.edgeDetection();
     this.x += this.speed.x;
@@ -168,22 +176,32 @@ export default class Particle {
     this.determineKinetic();
   }
 
+  /** @function render()
+    * Function to render the particles
+    */
   render(context) {
+    //Save entire context before hand
     context.save();
+    //If I want to display the id of the particle
     context.font = "15px Times New Roman";
+    //Sets the colors of the particles and the edge color
     context.strokeStyle = this.edgeColor;
     context.fillStyle = this.color;
+    //Draw the edge od the circle
     context.beginPath();
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.closePath();
     context.stroke();
+    //Draw the inner circle
     context.beginPath();
     context.arc(this.x, this.y, this.radius * this.energyLevel, 0, Math.PI * 2);
     context.closePath();
+    //Make it completely opac
     context.save();
     context.globalAlpha = 1.0;
     context.fill();
     context.restore();
+    //Draw the whole particle
     context.beginPath();
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.closePath();

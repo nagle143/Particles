@@ -1,15 +1,32 @@
+/*
+Block = Brick = Rectangle
+circle = particle
+*/
+
 import Particle from './particle.js';
 import Block from './block.js';
 
+
+/** @class Controller
+  * Class that controls everything, creation/deletion of objects and collsions
+  */
 export default class Controller {
+  /** @constructor
+  * Sets all of the most important variables and sets up the canvas objects
+  */
   constructor() {
+    //Prevent the app from crashing by trying to put more objects than there is space
     this.MAX_PARTICLES = 100;
     this.MAX_BLOCKS = 15;
+    //Variables to keep track of the objects
     this.numParticles = 20;
     this.numBlocks = 5;
+    //Variable for display, percentage the current state of particles velocities are amplified
     this.amplified = 100;
+    //Arrays of objects
     this.particles = [];
     this.blocks = [];
+    //Functions that handle creating objects
     this.createParticles();
     this.createBlocks();
 
@@ -19,6 +36,7 @@ export default class Controller {
     this.HUDcanvas.height = 1000;
     this.HUDcontext = this.HUDcanvas.getContext('2d');
     document.body.appendChild(this.HUDcanvas);
+    //Sets up the static instructions part of the HUD;
     this.initHUD();
     //Back Buffer
     this.backBufferCanvas = document.getElementById("canvas");
@@ -26,7 +44,7 @@ export default class Controller {
     this.backBufferCanvas.height = 1000;
     this.backBufferContext = this.backBufferCanvas.getContext('2d');
 
-    //Screen canvas
+    //Canvas that actually gets put on the screen
     this.screenBufferCanvas = document.getElementById("canvas");
     this.screenBufferCanvas.width = 1000;
     this.screenBufferCanvas.height = 1000;
@@ -37,7 +55,6 @@ export default class Controller {
     this.update = this.update.bind(this);
     this.render = this.render.bind(this);
     this.loop = this.loop.bind(this);
-    //this.calcDistance = this.calcDistance.bind(this);
     this.createParticles = this.createParticles.bind(this);
     this.rotate = this.rotate.bind(this);
     this.particleCollision = this.particleCollision.bind(this);
@@ -52,14 +69,18 @@ export default class Controller {
     this.initHUD = this.initHUD.bind(this);
     window.onkeydown = this.handleKeyDown;
 
-    //Loop
-    this.interval = setInterval(this.loop, 20);
+    //App Loop
+    this.interval = setInterval(this.loop, 10);
   }
 
+  /** @function handKeyDown()
+    * @params event
+    * function that handles all the key inputs
+    */
   handKeyDown(event) {
     event.preventDefault();
-    //console.log(event.key);
     switch (event.key) {
+      //Adds Blocks
       case 'b':
       case 'B':
         if(this.numBlocks < this.MAX_BLOCKS) {
@@ -67,6 +88,7 @@ export default class Controller {
           this.numBlocks++;
         }
         break;
+      //Removes Blocks
       case 'n':
       case 'N':
         if(this.numBlocks > 0) {
@@ -74,18 +96,21 @@ export default class Controller {
           this.numBlocks--;
         }
         return;
+      //Adds Particles
       case '+':
         if(this.numParticles < this.MAX_PARTICLES) {
           this.addParticle();
           this.numParticles++;
         }
         break;
+      //Removes Particles
       case '-':
         if(this.numParticles > 0) {
           this.removeParticle();
           this.numParticles--;
         }
         break;
+      //Amplifies the speed of all particles in the current array
       case '*':
         this.particles.forEach(particle => {
           particle.speed.x *= 1.10;
@@ -93,6 +118,7 @@ export default class Controller {
         });
         this.amplified *= 1.10;
         break;
+      //Diminishes the speed of all particles in the current array
       case '/':
         this.particles.forEach(particle => {
           particle.speed.x *= 0.90;
@@ -103,56 +129,81 @@ export default class Controller {
     }
   }
 
+  /** @function createParticles()
+    * Function to initialize the array of particles by calling the addParticle function until numParticles is met
+    */
   createParticles() {
     while(this.particles.length < this.numParticles) {
       this.addParticle();
     }
   }
 
+  /** @function addParticle()
+    * Function to add new particle to the list while making sure it is not spawned where a object already is
+    */
   addParticle() {
+    //Variables to establish the particle
     var x;
     var y;
     var radius;
     var mass;
+    //Pretty much useless, only for early debugging
     var id = 0;
+    //Var to control the while loop
     var currLength = this.particles.length;
+    //Loop that generates random values for the particle and makes sure the space is not already occupied
     while (currLength === this.particles.length) {
+      //Var to determine if it would have spawned inside something
       var collision = false;
       x = this.random(50, 900);
       y = this.random(50, 900);
+      //Use a dumby radius to ensure no overlap with anything, radius is actually set based on mass
       radius = 45;
       mass = this.randomInt(1, 10);
+      //Checks if the position is occupied by another particle
       this.particles.forEach(particle => {
         if(particle.collisionDetection(x, y, radius)) {
           collision = true;
         }
       });
+      //Checks if the position is occupied by a block
       this.blocks.forEach(block => {
         if(this.ballBrickCollision(x, y, radius, block.x, block.y, block.width, block.height)) {
           collision = true;
         }
       });
+      //If collision is still false, the space is open
       if(!collision) {
-        this.particles.push(new Particle(x, y, radius, mass, id));
+        this.particles.push(new Particle(x, y, mass, id));
         id++;
       }
     }
+    //Updates the Amplied variable because it only tracks the current state of the particles
     this.amplified = 100;
   }
 
+/** @function createBlocks()
+  * Function to populate the blocks array by calling addRect until numBlocks is met
+  */
   createBlocks() {
     while(this.blocks.length < this.numBlocks) {
       this.addRect();
     }
   }
 
+  /** @function addRect()
+    * Function to add a new block/rectangle to the blocks array and makes sure the space is clear
+    */
   addRect() {
+    //Vars to create a new block
     var x;
     var y;
     var width;
     var height;
+    //Var to control the loop below
     var currLength = this.blocks.length;
-
+    //Loop that randomizes values and checks if the space is clear to add the block
+    //Operates the same as addParticle but for Rectangles
     while(currLength === this.blocks.length) {
       var collision = false;
       x = this.random(100, 800);
@@ -175,37 +226,62 @@ export default class Controller {
     }
   }
 
+  /** @function ballBrickCollision()
+    * Function to determine if a particle and Rectangle are overlapping
+    * @param float cx is the x position of the center of the circle
+    * @param float cy is the y position of the center of the circle
+    * @param int cRadius is the radius of the circle
+    * @param float bx is the x position of the top left corner of the block
+    * @param float by is the y position of the top left corner of the block
+    * @param int bWidth is the width of the block in pixels
+    * @param int bHeight is the height of the block in pixels
+    * Additional Note - I broke up the params all the way to use this function when creating blocks and particles
+    * without having to create a object prior to calling the function. Kinda Messy honestly, but it worked out.
+    */
   ballBrickCollision(cx, cy, cRadius, bx, by, bWidth, bHeight) {
-    //Assige the particle and Block to vars for easier use
+    //Assign the particle and Block to vars for easier use
     var particle = {x: cx, y: cy, radius: cRadius};
     var block = {x: bx, y: by, width: bWidth, height: bHeight}
+    //Var to hold the center of the rectangle
     var bCenter = {x: block.x + block.width * 0.5, y: block.y + block.height * 0.5};
+    //distance between centers in by X and Y axis
     var dx = Math.abs(particle.x - bCenter.x);
     var dy = Math.abs(particle.y - bCenter.y);
 
+    //Checks if the X distance is close
     if(dx > block.width * 0.5 + particle.radius) {
       return false;
     }
+    //Checks if the Y distance is close
     if(dy > block.height * 0.5 + particle.radius) {
       return false;
     }
+    //If distance is less half the block width then there is a collision
     if(dx <= block.width * 0.5) {
       return true;
     }
+    //Same for the y direction
     if(dy <= block.height * 0.5) {
       return true;
     }
 
+    //distance from the torner of the rectangle
     var cornerDistance = Math.pow(dx - block.width * 0.5, 2) + Math.pow(dy - block.height * 0.5, 2);
-
+    //Checks if the cornerDistance is less than the radius
     return (cornerDistance <= particle.radius * particle.radius);
   }
 
+  /** @function resolveBlockCollision()
+    * Function to resolve a collision between a particle and a block
+    * @param particle pID is the index of the particular particle in question
+    * @param block bID is the index of the block in question
+    * Still needs to be cleaned up and fix how it handles corner collisions, as of now it doesn't break on corners but doesn't handle them well.
+    */
   resolveBlockCollision(pID, bID) {
     //var particle = this.particles[pID];
     //var block = this.blocks[bID];
+
     //distance between the objects' centers
-    //console.log(particle);
     var dx = this.particles[pID].x - (this.blocks[bID].x + this.blocks[bID].width * 0.5);
     var dy = this.particles[pID].y - (this.blocks[bID].y + this.blocks[bID].height * 0.5);
     var absX = Math.abs(dx);
@@ -245,6 +321,7 @@ export default class Controller {
       else {
         corner = {x: this.blocks[bID].x, y: this.blocks[bID].y + this.blocks[bID].height};
       }
+      //Something is wrong with this, i don't know what though...
       var deltaX = this.particles[pID].x - corner.x;
       var deltaY = this.particles[pID].y - corner.y;
       var c  = -2 * (this.particles[pID].speed.x * deltaX + this.particles[pID].speed.y * deltaY) / (deltaX * deltaX + deltaY * deltaY);
@@ -253,13 +330,25 @@ export default class Controller {
     }
   }
 
+  /** @function removeParticle()
+    * function to remove a particle from the list
+    */
   removeParticle() {
     this.particles.pop();
   }
+
+  /** @function removeBlock()
+    * Function to remove a block from the list
+    */
   removeBlock() {
     this.blocks.pop();
   }
 
+  /** @function rotate()
+    * Function to change the velocities to make the collisions act like 1-dimensional particles
+    * @param velocity is the x and y velocities of the particle
+    * @param float angle is the offest needed to adjust for
+    */
   rotate(velocity, angle) {
     const rotatedVelocities = {
         x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
@@ -268,10 +357,16 @@ export default class Controller {
     return rotatedVelocities;
   }
 
+  /** @function particleCollision()
+    * Function to handle particle to particle collisions
+    * @param particle is the first particle in question
+    * @param particle otherParticle is the other particle in question
+    */
   particleCollision(particle, otherParticle) {
+    //Vars to determine the differences in velocities
     var xVelocityDiff = particle.speed.x - otherParticle.speed.x;
     var yVelocityDiff = particle.speed.y - otherParticle.speed.y;
-
+    //Vars to determine the distances between particles
     var xDist = otherParticle.x - particle.x;
     var yDist = otherParticle.y - particle.y;
 
@@ -298,8 +393,6 @@ export default class Controller {
         var vFinal2 = this.rotate(v2, -angle);
 
         // Swap particle velocities for realistic bounce effect
-        //particle.updateSpeed(vFinal1.x, vFinal2.y);
-        //otherParticle.updateSpeed(vFinal2.x, vFinal2.y);
         particle.speed.x = vFinal1.x;
         particle.speed.y = vFinal1.y;
         otherParticle.speed.x = vFinal2.x;
@@ -307,14 +400,26 @@ export default class Controller {
     }
   }
 
+  /** @function random()
+    * Function to get a random number between to values
+    * @param int min is the minimum desired value
+    * @param int max is the maximum desired value
+    */
   random(min, max) {
     return Math.random() * (max - min) + min;
   }
 
+  /** @function randomInt()
+    * @param int min is the minimum desire value
+    * @param int max is the maximum desire value
+    */
   randomInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
   }
 
+  /** @function drawHUD()
+    * Function to draw the HUD that Updates
+    */
   drawHUD() {
     this.HUDcontext.fillStyle = 'black';
     this.HUDcontext.fillRect(0, 0, 200, 500);
@@ -325,6 +430,9 @@ export default class Controller {
     this.HUDcontext.strokeText("Speed: " + Math.floor(this.amplified) + "%", 10,300);
   }
 
+  /** @function initHUD()
+    * function to initialize the static HUD/instructions
+    */
   initHUD() {
     this.HUDcontext.fillStyle = 'black';
     this.HUDcontext.fillRect(0, 500, 200, 500);
@@ -344,10 +452,15 @@ export default class Controller {
     this.HUDcontext.strokeText("  Particles**", 10, 960);
   }
 
+  /** @function update()
+    * function update function that calls the other update functions and the collision functions
+    */
   update() {
+    //Updates all the particles
     this.particles.forEach(particle => {
       particle.update();
     });
+    //Checks for collisions between particles
     for(var i = 0; i < this.particles.length; i++) {
       for(var j = 0; j < this.particles.length; j++) {
         if(i != j) {
@@ -357,6 +470,7 @@ export default class Controller {
         }
       }
     }
+    //Checks for collisions between particles and Blocks
     for(var x = 0; x < this.particles.length; x++) {
       for(var z = 0; z < this.blocks.length; z++) {
         if(this.ballBrickCollision(this.particles[x].x, this.particles[x].y, this.particles[x].radius,
@@ -367,6 +481,9 @@ export default class Controller {
     }
   }
 
+  /** @function render()
+    * Function to call all the othe render functions and drawHUD function
+    */
   render() {
     this.backBufferContext.fillStyle = 'black';
     this.backBufferContext.strokeStyle = 'green';
@@ -382,6 +499,9 @@ export default class Controller {
     this.drawHUD();
   }
 
+  /** @function loop()
+    * function to handle the 'clock' of the app
+    */
   loop() {
     this.update();
     this.render();
